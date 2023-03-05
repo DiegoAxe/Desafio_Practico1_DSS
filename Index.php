@@ -29,19 +29,25 @@
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="index.php ">Inicio</a>
+                <a class="nav-link active" aria-current="page" href="Index.php ">Inicio</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="InterfazAdmin.php">Productos</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Informacion</a>
+                <a class="nav-link" href="Informacion.php">Informacion</a>
               </li>
               
-            <form class="d-flex">
-              <input class="form-control me-2" type="search" placeholder="Busca un producto"  aria-label="Search">
-              <button class="btn btn-primary btn-primary-outline-success" type="submit">Buscar</button>
-            </form>
+              <form class="d-flex" method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+  <input class="form-control me-2" type="search" placeholder="Buscar" name="filtro" aria-label="Search">
+  <button class="btn btn-outline-success" type="submit">Buscar</button>
+        <button class="btn btn-secondary ms-2" type="submit" name="quitar-filtro">Quitar filtro</button>
+</form>
+
+<?php if(!empty($filtro)) : ?>
+        <button class="btn btn-secondary ms-2" type="submit" name="quitar-filtro">Quitar filtro</button>
+    <?php endif; ?>
+
           </div>
         </div>
       </nav>
@@ -79,13 +85,24 @@
   <!-- Listado de productos -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <div class="productos">
-    <?php
-    
-    $xml = simplexml_load_file('Almacen.xml');
-        
-        foreach($xml->children() as $producto){
-          
-            echo ' <div class="list-group mt-4 d-flex">
+<?php
+$xml = simplexml_load_file('Almacen.xml');
+
+// Obtener la palabra clave ingresada por el usuario
+$filtro = isset($_POST['filtro']) ? $_POST['filtro'] : '';
+
+// Verificar si se ha enviado la acción "quitar filtro"
+if(isset($_POST['quitar-filtro'])) {
+    // Redirigir a la página actual sin filtro
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+foreach($xml->children() as $producto){
+    // Verificar si el producto coincide con la palabra clave de búsqueda
+    if(empty($filtro) || stripos($producto->nombre, $filtro) !== false) {
+
+      echo ' <div class="list-group mt-4 d-flex">
             <a href="#" class="list-group-item list-group-item-action detalles-btn" data-bs-toggle="modal" data-bs-target="#exampleModal" data-codigo="'.$producto->codigo.'" data-nombre="'.$producto->nombre.'" data-descripcion="'.$producto->descripcion.'" data-categoria="'.$producto->categoria.'" data-precio="'.$producto->precio.'" data-existencias="'.$producto->existencias.'">
               <div class="d-flex">
                 <div class="p-2">
@@ -104,9 +121,11 @@
               </div>
             </a>
           </div>';
-        }
+    }
+}
+?>
 
-    ?>
+
     </div>
     <script src="assets/js/script.js"></script>
      <!-- footer -->
